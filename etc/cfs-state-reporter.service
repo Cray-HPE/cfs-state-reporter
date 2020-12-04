@@ -1,0 +1,20 @@
+#
+# Copyright 2020 Cray Inc., an HPE Company  All rights reserved.
+#
+# The contents of this file is proprietary information of Cray Inc.
+# and may not be disclosed without prior written consent.
+#
+
+[Unit]
+Description=cfs-state-reporter reports configuration level of the system
+DefaultDependencies=no
+After=multi-user.target
+
+[Service]
+Environment="MODULEFLAG=-m"
+Environment="MODULENAME=cfs.status_reporter"
+Type=oneshot
+ExecStart=/usr/bin/python3 ${MODULEFLAG} ${MODULENAME}
+
+[Install]
+WantedBy=multi-user.target
