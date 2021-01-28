@@ -12,6 +12,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import subprocess
+import time
 
 LOGGER = logging.getLogger('cfs.client')
 
@@ -31,17 +32,19 @@ REFRESH_TOKEN_PATH = os.path.join(TOKEN_DIR, 'refresh')
 def get_auth_token(path='/opt/cray/auth-utils/bin/get-auth-token'):
     if not os.getenv('SPIRE_AGENT_PATH'):
         os.environ['SPIRE_AGENT_PATH'] = '/usr/bin/cfs-state-reporter-spire-agent'
-    try:
-        out = subprocess.check_output([path], universal_newlines=True)
-        out = out.rstrip('\n')
-    except subprocess.CalledProcessError as e:
-        LOGGER.error('Auth returned %d: %s' % (e.returncode, e.output))
-        raise
-    except Exception as e:
-        LOGGER.error('Unexpected exception')
-        LOGGER.error(e)
-        raise
-    return out
+    out = None
+    while not out:
+        try:
+            out = subprocess.check_output([path], universal_newlines=True)
+            out = out.rstrip('\n')
+            return out
+        except subprocess.CalledProcessError as e:
+            LOGGER.error('Auth returned %d: %s' % (e.returncode, e.output))
+        except Exception as e:
+            LOGGER.error('Unexpected exception')
+            LOGGER.error(e)
+        LOGGER.info("Spire Token not yet available; retrying in a few seconds.")
+        time.sleep(2)
 
 
 def requests_retry_session(retries=10, connect=10, backoff_factor=0.5,
