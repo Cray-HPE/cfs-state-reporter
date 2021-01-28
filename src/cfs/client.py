@@ -32,8 +32,7 @@ REFRESH_TOKEN_PATH = os.path.join(TOKEN_DIR, 'refresh')
 def get_auth_token(path='/opt/cray/auth-utils/bin/get-auth-token'):
     if not os.getenv('SPIRE_AGENT_PATH'):
         os.environ['SPIRE_AGENT_PATH'] = '/usr/bin/cfs-state-reporter-spire-agent'
-    out = None
-    while not out:
+    while True:
         try:
             out = subprocess.check_output([path], universal_newlines=True)
             out = out.rstrip('\n')
