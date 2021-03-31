@@ -1,6 +1,6 @@
-# Copyright 2020 Cray Inc., An HPE Company, All Rights Reserved.
+# Copyright 2020-2021 Hewlett Packard Enterprise Development LP
 Name: cfs-state-reporter
-License: Cray Software License Agreement
+License: MIT
 Summary: A system service which reports the configuration level of a given node
 Group: System/Management
 Version: %(cat .rpm_version)
