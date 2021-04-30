@@ -1,3 +1,4 @@
+# Copyright 2020-2021 Hewlett Packard Enterprise Development LP
 import logging
 import sys
 from time import sleep
@@ -29,7 +30,6 @@ def patch_as_unconfigured_until_success(component):
     """
     backoff_ceiling=30
     backoff_scalar=2
-    session = requests_retry_session()
     attempt = 0
     while True:
         # Each iteration, wait a bit longer before patching CFS component
@@ -39,6 +39,7 @@ def patch_as_unconfigured_until_success(component):
         sleep(time_to_wait)
         attempt += 1
         LOGGER.info("Attempt %s of contacting CFS..." %(attempt))
+        session = requests_retry_session()
         try:
             mark_unconfigured(component, session)
         except UnknownComponent:

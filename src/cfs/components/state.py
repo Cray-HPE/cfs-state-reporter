@@ -1,4 +1,4 @@
-# Copyright 2020 Hewlett Packard Enterprise Development LP
+# Copyright 2020-2021 Hewlett Packard Enterprise Development LP
 """
 This is a client module to the CFS component state API. This allows
 CFS to schedule configuration for nodes that have incorrect configuration
@@ -39,7 +39,6 @@ def patch_component(component, properties, session=None):
     """
     session = session or requests_retry_session()
     component_endpoint = '%s/%s' % (COMPONENT_ENDPOINT, component)
-    session.patch(component_endpoint, json=properties)
     try:
         response = session.patch(component_endpoint, json=properties)
     except (ConnectionError, MaxRetryError) as ce:
