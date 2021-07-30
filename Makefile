@@ -20,18 +20,26 @@
 #
 # (MIT License)
 
+# If you wish to perform a local build, you will need to clone or copy the contents of the
+# cms_meta_tools repo to ./cms_meta_tools
+
 NAME ?= cfs-state-reporter
-VERSION ?= $(shell cat .version)-local
+RPM_VERSION ?= $(shell head -1 .version)
 SPEC_FILE ?= ${NAME}.spec
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
-SPEC_VERSION ?= "1~development~$(shell git rev-parse --short HEAD)"
-SOURCE_NAME ?= ${NAME}-$(shell cat .version)
+SOURCE_NAME ?= ${NAME}-$(RPM_VERSION)
 BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH ?= ${BUILD_DIR}/SOURCES/${SOURCE_NAME}.tar.bz2
 PYTHON_SITE_PACKAGES_PATH ?= $(shell python3 -c 'import site; print(site.getsitepackages()[0])')
 
-all : prepare rpm
+all : runbuildprep lint prepare rpm
 rpm: rpm_package_source rpm_build_source rpm_build
+
+runbuildprep:
+		./cms_meta_tools/scripts/runBuildPrep.sh
+
+lint:
+		./cms_meta_tools/scripts/runLint.sh
 
 prepare:
 		rm -rf $(BUILD_DIR)
@@ -39,7 +47,7 @@ prepare:
 		cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
 
 rpm_package_source:
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude dist -cvjf $(SOURCE_PATH) .
+		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude ./dist --exclude ./cms_meta_tools -cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
 		BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ts $(SOURCE_PATH) --define "_topdir $(BUILD_DIR)"
