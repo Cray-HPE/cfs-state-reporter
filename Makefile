@@ -21,7 +21,7 @@
 # (MIT License)
 
 # If you wish to perform a local build, you will need to clone or copy the contents of the
-# cms_meta_tools repo to ./cms_meta_tools
+# cms-meta-tools repo to ./cms_meta_tools
 
 NAME ?= cfs-state-reporter
 RPM_VERSION ?= $(shell head -1 .version)
