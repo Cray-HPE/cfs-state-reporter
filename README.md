@@ -12,9 +12,17 @@ restore configuration to prescribed configuration in the event of a loss of powe
 The responsibility of this client is to successfully communicate that the node is
 without configuration ONCE to CFS.
 
+## Build Helpers
+This repo uses some build helper scripts from the 
+[cms-meta-tools ](https://github.com/Cray-HPE/cms-meta-tools) repo.
+
 ## Versioning
-Use [SemVer](http://semver.org/). The version is located in the [.version](.version) file. Other files
-read the version string from this file.
+We use [SemVer](http://semver.org/). The version is generated at build time by the
+version.py script in the [cms-meta-tools ](https://github.com/Cray-HPE/cms-meta-tools) repo,
+and then written to the .version file.
+
+Since the migration to github, there is also some additional version massaging that takes place
+in [Jenkinsfile.github](Jenkinsfile.github).
 
 ## Copyright and License
 This project is copyrighted by Hewlett Packard Enterprise Development LP and is under the MIT
