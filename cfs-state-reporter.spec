@@ -40,8 +40,7 @@ Requires: cray-auth-utils
 Provides a systemd service and associated library that reports the
 configuration status of a running system during system startup.
 
-%{!?python3_sitelib: %define python3_sitelib %(/usr/bin/python3 -c
-"from distutils.sysconfig import get_python_lib; print(get_python_lib())")}
+%{!?python3_sitelib: %define python3_sitelib %(/usr/bin/python3 -c "from distutils.sysconfig import get_python_lib ; print(get_python_lib())")}
 
 %prep
 %setup -q
