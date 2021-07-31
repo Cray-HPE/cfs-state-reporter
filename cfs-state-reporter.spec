@@ -93,3 +93,5 @@ fi
 %else
 %systemd_postun_with_restart cfs-state-reporter.service
 %endif
+
+%changelog
