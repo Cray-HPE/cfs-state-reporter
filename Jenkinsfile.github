@@ -14,6 +14,7 @@ pipeline {
         NAME = "cfs-state-reporter"
         DESCRIPTION = "Cray Management System - Configuration Framework Operator"
         IS_STABLE = getBuildIsStable()
+        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
     }
 
     stages {
@@ -31,7 +32,7 @@ pipeline {
                     // Get version from version.py
                     def ver = sh(returnStdout: true, script: "./cms_meta_tools/version.py").trim()
                     echo "Base version is ${ver}"
-                    
+
                     // Write base version to .version
                     writeFile(file: ".version", text: ver)
                 }
@@ -51,10 +52,6 @@ pipeline {
         }
 
         stage("Add RPM Metadata") {
-            environment {
-                BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
-            }
-
             steps {
                 echo "RPM build metadata is ${env.BUILD_METADATA}"
                 runLibraryScript("addRpmMetaData.sh", "")
