@@ -35,7 +35,7 @@ setup(name='cfs-state-reporter',
       description=readme,
       author='CASMCMS',
       author_email='joel.landsteiner@hpe.com',
-      url="https://stash.us.cray.com/projects/SCMS/repos/cfs-state-reporter/browse",
+      url="https://github.com/Cray-HPE/cfs-state-reporter",
       package_dir={'': 'src'},
       packages=['cfs', 'cfs.components', 'cfs.status_reporter'],
      )
