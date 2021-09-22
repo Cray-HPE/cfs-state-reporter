@@ -40,7 +40,7 @@ Requires: cray-auth-utils
 Provides a systemd service and associated library that reports the
 configuration status of a running system during system startup.
 
-%{!?python3_sitelib: %define python3_sitelib %(/usr/bin/python3 -c "from distutils.sysconfig import get_python_lib ; print(get_python_lib())")}
+%define python3_sitelib %(/usr/bin/python3 -c "from distutils.sysconfig import get_python_lib ; print(get_python_lib())")
 
 %prep
 %setup -q
@@ -52,8 +52,8 @@ configuration status of a running system during system startup.
 rm -rf $RPM_BUILD_ROOT
 /usr/bin/python3 setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
 mkdir -p ${RPM_BUILD_ROOT}%{_systemdsvcdir}
-cp etc/cfs-state-reporter.service $RPM_BUILD_ROOT/%{_systemdsvcdir}/cfs-state-reporter.service
-chmod +x $RPM_BUILD_ROOT/%{python3_sitelib}/cfs/status_reporter/__main__.py
+cp etc/cfs-state-reporter.service $RPM_BUILD_ROOT%{_systemdsvcdir}/cfs-state-reporter.service
+chmod +x $RPM_BUILD_ROOT%{python3_sitelib}/cfs/status_reporter/__main__.py
 
 %clean
 rm -rf $RPM_BUILD_ROOT
