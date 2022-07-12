@@ -33,6 +33,11 @@ For RPMs, it is added to the changelog. For Helm charts, it is added as annotati
 Docker images, it is written to gitInfo.txt in the root of the container. This is done using the
 git_info tool in cms-meta-tools, which is called automatically by the runBuildPrep script.
 
+## Changelog
+
+See the [CHANGELOG](CHANGELOG.md) for changes. This file uses the [Keep A Changelog](https://keepachangelog.com)
+format.
+
 ## Copyright and License
 This project is copyrighted by Hewlett Packard Enterprise Development LP and is under the MIT
 license. See the [LICENSE](LICENSE) file for details.
@@ -48,3 +53,4 @@ scripts. It does **not** include Jenkinsfiles, OpenAPI/Swagger specs, or READMEs
 
 When in doubt, provided the file is not covered under someone else's copyright or license, then
 it does not hurt to add ours to the header.
+
