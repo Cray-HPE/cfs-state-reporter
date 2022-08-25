@@ -32,7 +32,7 @@ from cfsssh.setup.client.run import main as cfsssh_setup_main
 
 # Configure Project Level Logging options when invoked through __main__;
 # This allows the whole project to log from their source when invoked throuh
-# __main__, but does not populate stdandard out streamming when the code
+# __main__, but does not populate standard out streaming when the code
 # is imported by other tooling.
 LOG_LEVEL = logging.DEBUG
 PROJECT_LOGGER = logging.getLogger('cfs')
