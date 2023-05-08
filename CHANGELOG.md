@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- RPM builds type changed from `x86_64` to `noarch`. (CASMCMS-8516)
 - Spelling corrections.
 
 ### Removed
