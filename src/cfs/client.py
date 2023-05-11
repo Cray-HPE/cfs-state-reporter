@@ -49,7 +49,7 @@ REFRESH_TOKEN_PATH = os.path.join(TOKEN_DIR, 'refresh')
 # is sufficient for us to use it as part of multi-user.target
 # right after a node reboots. The code is written to handle
 # both kinds of files, should we ever need to extend this
-# code to handle token refres operations.
+# code to handle token refresh operations.
 
 
 def get_auth_token(path='/opt/cray/auth-utils/bin/get-auth-token'):

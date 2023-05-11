@@ -17,24 +17,9 @@ This repo uses some build helper scripts from the
 [cms-meta-tools ](https://github.com/Cray-HPE/cms-meta-tools) repo.
 
 ## Versioning
-We use [SemVer](http://semver.org/). The version is generated at build time by the
-version.py script in the [cms-meta-tools ](https://github.com/Cray-HPE/cms-meta-tools) repo,
-and then written to the .version file.
-
-All other files either read from that file or have the version string written to them at
-build time based on the information in the [update_versions.conf](update_versions.conf) file. 
-
-Since the migration to github, there is also some additional version massaging that takes place
-in [Jenkinsfile.github](Jenkinsfile.github).
-
-In order to make it easier to go from a version number back to the source code that produced that version,
-some information about the most recent git commit is added at build time to build artifacts.
-For RPMs, it is added to the changelog. For Helm charts, it is added as annotations metadata. And for
-Docker images, it is written to gitInfo.txt in the root of the container. This is done using the
-git_info tool in cms-meta-tools, which is called automatically by the runBuildPrep script.
+We use [SemVer](http://semver.org/).
 
 ## Changelog
-
 See the [CHANGELOG](CHANGELOG.md) for changes. This file uses the [Keep A Changelog](https://keepachangelog.com)
 format.
 

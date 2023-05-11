@@ -1,4 +1,4 @@
-# Copyright 2020-2021 Hewlett Packard Enterprise Development LP
+# Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -26,6 +26,7 @@ Group: System/Management
 Version: %(cat .version)
 Release: %(echo ${BUILD_METADATA})
 Source: %{name}-%{version}.tar.bz2
+BuildArch: noarch
 Vendor: Cray Inc.
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 Requires: python3-base
