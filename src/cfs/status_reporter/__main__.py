@@ -53,7 +53,7 @@ PROJECT_LOGGER.addHandler(_stream_handler)
 # will provide a backup mechanism to verify overall history of what was accomplished by the service on non-ephemerally
 # provisioned root filesystems.
 LOG_FILE_PATH = '/var/log/cfs_state_reporter.log'
-os.makedirs(os.path.dirname(LOG_FILE_PATH, exist_ok=True))
+os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
 _rfh = logging.handlers.RotatingFileHandler(os.path.basename(LOG_FILE_PATH), maxBytes=1024*16, backupCount=2)
 _rfh.setLevel(LOG_LEVEL)
 PROJECT_LOGGER.addHandler(_rfh)
