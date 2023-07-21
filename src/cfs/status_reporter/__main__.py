@@ -23,7 +23,9 @@
 #
 import logging
 import sys
+import os
 from time import sleep
+from logging.handlers import RotatingFileHandler
 
 from cfs.client import requests_retry_session
 from cfs.node_identity import read_identity
@@ -31,18 +33,30 @@ from cfs.components.state import mark_unconfigured, CFSComponentException, Unkno
 from cfsssh.setup.client.run import main as cfsssh_setup_main
 
 # Configure Project Level Logging options when invoked through __main__;
-# This allows the whole project to log from their source when invoked throuh
+# This allows the whole project to log from their source when invoked through
 # __main__, but does not populate standard out streaming when the code
 # is imported by other tooling.
-LOG_LEVEL = logging.DEBUG
+
 PROJECT_LOGGER = logging.getLogger('cfs')
+PROJECT_LOGGER.setLevel(logging.DEBUG)
+
+# Add basic stream handler to status_reporter specific logger
 LOGGER = logging.getLogger('cfs.status_reporter')
+LOG_LEVEL = logging.DEBUG
 LOGGER.setLevel(LOG_LEVEL)
 _stream_handler = logging.StreamHandler(sys.stdout)
 _stream_handler.setLevel(LOG_LEVEL)
 PROJECT_LOGGER.addHandler(_stream_handler)
-PROJECT_LOGGER.setLevel(logging.DEBUG)
 
+# Configure a separate location to store runtime information outside of systemd/rsyslog/journald services, which can
+# be zero'd removed under certain build/boot instances. Preservation of this log information in a separate location
+# will provide a backup mechanism to verify overall history of what was accomplished by the service on non-ephemerally
+# provisioned root filesystems.
+LOG_FILE_PATH = '/var/log/cfs_state_reporter.log'
+os.makedirs(os.path.dirname(LOG_FILE_PATH, exist_ok=True))
+_rfh = logging.handlers.RotatingFileHandler(os.path.basename(LOG_FILE_PATH), maxBytes=1024*16, backupCount=2)
+_rfh.setLevel(LOG_LEVEL)
+PROJECT_LOGGER.addHandler(_rfh)
 
 
 def patch_as_unconfigured_until_success(component):
@@ -50,8 +64,8 @@ def patch_as_unconfigured_until_success(component):
     Loop until CFS component information has been registered;
     tells CFS that the component (_this_ node) requires configuration.
     """
-    backoff_ceiling=30
-    backoff_scalar=2
+    backoff_ceiling = 30
+    backoff_scalar = 2
     attempt = 0
     while True:
         # Each iteration, wait a bit longer before patching CFS component

@@ -71,6 +71,7 @@ def get_auth_token(path='/opt/cray/auth-utils/bin/get-auth-token'):
 
 def requests_retry_session(retries=10, connect=10, backoff_factor=0.5,
                            status_forcelist=(500, 502, 503, 504),
+                           connect_timeout=3, read_timeout=10,
                            session=None):
     session = session or requests.Session()
     retry = Retry(
@@ -79,6 +80,7 @@ def requests_retry_session(retries=10, connect=10, backoff_factor=0.5,
         connect=retries,
         backoff_factor=backoff_factor,
         status_forcelist=status_forcelist,
+        timeout=(connect_timeout, read_timeout)
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount(PROTOCOL, adapter)
