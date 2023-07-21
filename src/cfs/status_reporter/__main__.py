@@ -32,21 +32,18 @@ from cfs.node_identity import read_identity
 from cfs.components.state import mark_unconfigured, CFSComponentException, UnknownComponent
 from cfsssh.setup.client.run import main as cfsssh_setup_main
 
-# Configure Project Level Logging options when invoked through __main__;
+# Configure Root Level Logging options when invoked through __main__;
 # This allows the whole project to log from their source when invoked through
 # __main__, but does not populate standard out streaming when the code
 # is imported by other tooling.
-
-PROJECT_LOGGER = logging.getLogger('cfs')
-PROJECT_LOGGER.setLevel(logging.DEBUG)
-
-# Add basic stream handler to status_reporter specific logger
-LOGGER = logging.getLogger('cfs.status_reporter')
 LOG_LEVEL = logging.DEBUG
-LOGGER.setLevel(LOG_LEVEL)
+ROOT_LOGGER = logging.getLogger()
+ROOT_LOGGER.setLevel(LOG_LEVEL)
+
+# Add basic stream handler to all calls made
 _stream_handler = logging.StreamHandler(sys.stdout)
 _stream_handler.setLevel(LOG_LEVEL)
-PROJECT_LOGGER.addHandler(_stream_handler)
+ROOT_LOGGER.addHandler(_stream_handler)
 
 # Configure a separate location to store runtime information outside of systemd/rsyslog/journald services, which can
 # be zero'd removed under certain build/boot instances. Preservation of this log information in a separate location
@@ -54,10 +51,12 @@ PROJECT_LOGGER.addHandler(_stream_handler)
 # provisioned root filesystems.
 LOG_FILE_PATH = '/var/log/cfs_state_reporter.log'
 os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
-_rfh = logging.handlers.RotatingFileHandler(os.path.basename(LOG_FILE_PATH), maxBytes=1024*16, backupCount=2)
+_rfh = RotatingFileHandler(LOG_FILE_PATH, maxBytes=1024*16)
 _rfh.setLevel(LOG_LEVEL)
-PROJECT_LOGGER.addHandler(_rfh)
+ROOT_LOGGER.addHandler(_rfh)
 
+# Create a representative entrypoint logger for cfs-state-reporter
+LOGGER = logging.getLogger("cfs.status_reporter")
 
 def patch_as_unconfigured_until_success(component):
     """
