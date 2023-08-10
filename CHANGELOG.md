@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.4] - 2023-08-10
+### Changed
+- RPM OS type changed to `noos`. (CASMCMS-8691)
+
 ## [1.9.3] - 2023-06-22
 ### Added
 - Support for SLES SP5
