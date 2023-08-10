@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,35 +23,48 @@
 #
 import logging
 import sys
+import os
 from time import sleep
+from logging.handlers import RotatingFileHandler
 
 from cfs.client import requests_retry_session
 from cfs.node_identity import read_identity
 from cfs.components.state import mark_unconfigured, CFSComponentException, UnknownComponent
 from cfsssh.setup.client.run import main as cfsssh_setup_main
 
-# Configure Project Level Logging options when invoked through __main__;
-# This allows the whole project to log from their source when invoked throuh
+# Configure Root Level Logging options when invoked through __main__;
+# This allows the whole project to log from their source when invoked through
 # __main__, but does not populate standard out streaming when the code
 # is imported by other tooling.
 LOG_LEVEL = logging.DEBUG
-PROJECT_LOGGER = logging.getLogger('cfs')
-LOGGER = logging.getLogger('cfs.status_reporter')
-LOGGER.setLevel(LOG_LEVEL)
+ROOT_LOGGER = logging.getLogger()
+ROOT_LOGGER.setLevel(LOG_LEVEL)
+
+# Add basic stream handler to all calls made
 _stream_handler = logging.StreamHandler(sys.stdout)
 _stream_handler.setLevel(LOG_LEVEL)
-PROJECT_LOGGER.addHandler(_stream_handler)
-PROJECT_LOGGER.setLevel(logging.DEBUG)
+ROOT_LOGGER.addHandler(_stream_handler)
 
+# Configure a separate location to store runtime information outside of systemd/rsyslog/journald services, which can
+# be zero'd removed under certain build/boot instances. Preservation of this log information in a separate location
+# will provide a backup mechanism to verify overall history of what was accomplished by the service on non-ephemerally
+# provisioned root filesystems.
+LOG_FILE_PATH = '/var/log/cfs_state_reporter.log'
+os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
+_rfh = RotatingFileHandler(LOG_FILE_PATH, maxBytes=1024*16)
+_rfh.setLevel(LOG_LEVEL)
+ROOT_LOGGER.addHandler(_rfh)
 
+# Create a representative entrypoint logger for cfs-state-reporter
+LOGGER = logging.getLogger("cfs.status_reporter")
 
 def patch_as_unconfigured_until_success(component):
     """
     Loop until CFS component information has been registered;
     tells CFS that the component (_this_ node) requires configuration.
     """
-    backoff_ceiling=30
-    backoff_scalar=2
+    backoff_ceiling = 30
+    backoff_scalar = 2
     attempt = 0
     while True:
         # Each iteration, wait a bit longer before patching CFS component
