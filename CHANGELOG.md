@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.4] - 2023-08-10
+### Changed
+- RPM OS type changed to `noos`. (CASMCMS-8691)
+- Disabled concurrent Jenkins builds on same branch/commit
+- Added build timeout to avoid hung builds
+
 ## [1.9.3] - 2023-06-22
 ### Added
 - Support for SLES SP5
