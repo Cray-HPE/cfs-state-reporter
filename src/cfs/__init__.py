@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,7 @@
 import os
 import logging
 
-API_VERSION = 'v2'
+API_VERSION = 'v3'
 PROTOCOL = 'https'
 API_GATEWAY_DNS_NAME = os.environ.get('API_GATEWAY_HOST', 'api-gw-service-nmn.local')
 ENDPOINT = '%s://%s/apis/%s/%s' % (PROTOCOL, API_GATEWAY_DNS_NAME,
