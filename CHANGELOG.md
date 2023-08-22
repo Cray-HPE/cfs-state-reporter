@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2023-08-22
+### Changed
+Updated `cfs-state-reporter` spec file to reflect the fact that it should not be installed without `spire-agent` being present.
+
 ## [1.10.0] - 2023-08-18
 ### Added
 - Added rotating file handler to capture output for when syslog fails
