@@ -34,6 +34,7 @@ Requires: python3-requests
 Requires: systemd
 Requires: cfs-trust
 Requires: cray-auth-utils
+Requires: spire-agent
 
 %define _systemdsvcdir /usr/lib/systemd/system
 
