@@ -72,7 +72,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %post
-ln -f /usr/bin/spire-agent /usr/bin/cfs-state-reporter-spire-agent
+ln -f /opt/cray/cray-spire/spire-agent /usr/bin/cfs-state-reporter-spire-agent
 %if 0%{?suse_version}
 %service_add_post cfs-state-reporter.service
 %else
