@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] - 2024-08-21
 ### Changed
 - Changed how RPM release value is determined
+- Use `requests-retry-session` Python package instead of duplicating the code
 
 ## [1.11.0] - 2023-09-29
 ### Changed
