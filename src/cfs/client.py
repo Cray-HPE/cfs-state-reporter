@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,17 +25,14 @@
 This module is responsible for interacting with CFS in a reliable, authorized
 fashion.
 """
-
-import os
-from cfs import CFSException
-from . import PROTOCOL
-
 import logging
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+import os
 import subprocess
 import time
+
+from cfs.requests_retry_session import requests_retry_session as base_requests_retry_session
+
+from . import PROTOCOL
 
 LOGGER = logging.getLogger('cfs.client')
 
@@ -69,35 +66,8 @@ def get_auth_token(path='/opt/cray/auth-utils/bin/get-auth-token'):
         time.sleep(2)
 
 
-class TimeoutHTTPAdapter(HTTPAdapter):
-    """
-    An HTTP Adapter that allows a session level timeout for both read and connect attributes.
-    """
-    def __init__(self, *args, **kwargs):
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
-            del kwargs["timeout"]
-        super().__init__(*args, **kwargs)
-
-    def send(self, request, **kwargs):
-        timeout = kwargs.get("timeout")
-        if timeout is None and hasattr(self, 'timeout'):
-            kwargs["timeout"] = self.timeout
-        return super().send(request, **kwargs)
-
-def requests_retry_session(retries=10, connect=10, backoff_factor=0.5,
-                           status_forcelist=(500, 502, 503, 504),
-                           connect_timeout=3, read_timeout=10,
-                           session=None):
-    session = session or requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist
-    )
-    adapter = TimeoutHTTPAdapter(max_retries=retry, timeout=(connect_timeout, read_timeout))
-    session.mount(PROTOCOL, adapter)
+def requests_retry_session(**kwargs):
+    kwargs["protocol"] = PROTOCOL
+    session = base_requests_retry_session(**kwargs)
     session.headers.update({'Authorization': 'Bearer %s' % (get_auth_token())})
     return session
