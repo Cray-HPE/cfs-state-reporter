@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2019-2022, 2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -48,7 +48,7 @@ prepare:
 		cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
 
 rpm_package_source:
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude ./dist --exclude ./cms_meta_tools -cvjf $(SOURCE_PATH) .
+		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude ./dist --exclude ./cms_meta_tools --exclude ./requests-retry-session -cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
 		BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ts $(SOURCE_PATH) --define "_topdir $(BUILD_DIR)"
