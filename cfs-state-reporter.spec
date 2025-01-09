@@ -1,4 +1,4 @@
-# Copyright 2020-2024 Hewlett Packard Enterprise Development LP
+# Copyright 2020-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -31,7 +31,7 @@ Vendor: Cray Inc.
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 Requires: python3-base
 Requires: python3-requests
-Requires: python3-requests-retry-session >= 0.1.5
+Requires: python3-requests-retry-session >= 0.1.5, python3-requests-retry-session < 0.2.0
 Requires: systemd
 Requires: cfs-trust
 Requires: cray-auth-utils
