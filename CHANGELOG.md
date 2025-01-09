@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.1] - 2025-01-09
+### Fixed
+- Put upper limit on `requests_retry_session` RPM version to avoid requirements error
+
 ## [1.12.0] - 2024-08-21
 ### Changed
 - Changed how RPM release value is determined
