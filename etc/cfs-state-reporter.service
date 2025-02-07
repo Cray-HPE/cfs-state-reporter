@@ -5,10 +5,8 @@ DefaultDependencies=no
 After=multi-user.target
 
 [Service]
-Environment="MODULEFLAG=-m"
-Environment="MODULENAME=cfs.status_reporter"
 Type=oneshot
-ExecStart=/usr/bin/python3 ${MODULEFLAG} ${MODULENAME}
+ExecStart=/usr/lib/cfs_state_reporter/venv/bin/cfs_state_reporter
 
 [Install]
 WantedBy=multi-user.target

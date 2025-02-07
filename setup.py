@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -39,4 +39,5 @@ setup(name='cfs-state-reporter',
       url="https://github.com/Cray-HPE/cfs-state-reporter",
       package_dir={'': 'src'},
       packages=['cfs', 'cfs.components', 'cfs.status_reporter'],
+      entry_points={'console_scripts': ['cfs-state-reporter = cfs.status_reporter.__main__:main']}
      )

@@ -2,7 +2,7 @@
  *
  *  MIT License
  *
- *  (C) Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ *  (C) Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a
  *  copy of this software and associated documentation files (the "Software"),
@@ -26,6 +26,8 @@
 @Library('cms-meta-tools') _
 @Library('csm-shared-library') __
 
+def pyImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python'
+
 pipeline {
     agent {
         label "metal-gcp-builder"
@@ -43,6 +45,8 @@ pipeline {
         DESCRIPTION = "Cray Management System - Configuration Framework Operator"
         IS_STABLE = getBuildIsStable()
         BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+        PY_VERSION = "3.6"
+        PRIMARY_NODE = "${env.NODE_NAME}"
     }
 
     stages {
@@ -68,41 +72,102 @@ pipeline {
             }
         }
 
-        stage("Lint") {
+        stage("Prep") {
             steps {
                 sh "make lint"
-            }
-        }
 
-        stage("Add RPM Metadata") {
-            steps {
                 echo "RPM build metadata is ${env.BUILD_METADATA}"
                 runLibraryScript("addRpmMetaData.sh", "")
+
+                // Just using this as a means to generate the netrc file that we need
+                getDockerBuildArgs()
+
+                sh "make rpm_pre_clean"
             }
         }
 
         stage("Prepare") {
             steps {
-                sh "make prepare"
+
             }
         }
 
-        stage("Build RPM") {
-            agent {
-                docker {
-                    image "artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python:3.6"
-                    reuseNode true
+        stage('Build & Publish RPMs') {
+            matrix {
+                axes {
+                    axis {
+                        name 'ARCH'
+                        values 'x86_64', 'aarch64'
+                    }
+                }
+
+                environment {
+                    DOCKER_ARCH = sh(returnStdout: true, script: "[ ${ARCH} == 'x86_64' ] && echo -n 'amd64' || echo -n 'arm64'")
+                    BUILD_DIR = "${env.WORKSPACE}/dist/rpmbuild/${ARCH}"
+                }
+
+                stages {
+
+                    stage('Build: setup') {
+                        steps {
+                            lock('docker-image-pull') {
+                                sh "docker pull --platform linux/${DOCKER_ARCH} ${pyImage}:${PY_VERSION}-SLES15.5"
+                                sh "docker tag ${pyImage}:${PY_VERSION}-SLES15.5 ${pyImage}:${DOCKER_ARCH}"
+                            }
+                        }
+                    }
+
+                    stage('Build: RPMs') {
+                        agent {
+                            docker {
+                                label "${PRIMARY_NODE}"
+                                reuseNode true
+                                args "-v /home/jenkins/.ssh:/home/jenkins/.ssh --platform linux/${DOCKER_ARCH}"
+                                image "${pyImage}:${DOCKER_ARCH}"
+                            }
+                        }
+                        steps {
+                            sh "make rpm"
+                        }
+                    }
+
+                    stage('Publish: RPMs') {
+
+                        agent {
+                            docker {
+                                label "${PRIMARY_NODE}"
+                                reuseNode true
+                                args "-v /home/jenkins/.ssh:/home/jenkins/.ssh --platform linux/${DOCKER_ARCH}"
+                                image "${pyImage}:${DOCKER_ARCH}"
+                            }
+                        }
+                        steps {
+                            script {
+                                publishCsmRpms(
+                                        arch: "${ARCH}",
+                                        component: env.NAME,
+                                        isStable: env.IS_STABLE,
+                                        os: "noos",
+                                        pattern: "dist/rpmbuild/${ARCH}/RPMS/${ARCH}/*.rpm",
+                                )
+                                publishCsmRpms(
+                                        arch: "src",
+                                        component: env.NAME,
+                                        isStable: env.IS_STABLE,
+                                        os: "noos",
+                                        pattern: "dist/rpmbuild/${ARCH}/SRPMS/*.rpm",
+                                )
+                        }
+                    }
                 }
             }
-            steps {
-                sh "make rpm"
-            }
         }
+
 
         stage('Publish RPM') {
             steps {
                 script {
-                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/noarch/*.rpm", os: "noos", arch: "noarch", isStable: env.IS_STABLE)
+                    publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/RPMS/noarch/*.rpm", os: "noos", arch: "noarch", isStable: )
                     publishCsmRpms(component: env.NAME, pattern: "dist/rpmbuild/SRPMS/*.rpm", os: "noos", arch: "src", isStable: env.IS_STABLE)
                 }
             }

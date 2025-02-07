@@ -19,21 +19,33 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 # (MIT License)
+%define install_dir /usr/lib/cfs_state_reporter/
+%define install_python_dir %{install_dir}venv
+
+# Define which Python flavors python-rpm-macros will use (this can be a list).
+# https://github.com/openSUSE/python-rpm-macros#terminology
+%define pythons %(echo ${PYTHON_BIN})
+%define py_version %(echo ${PY_VERSION})
+%define py_minor_version %(echo ${PY_VERSION} | cut -d. -f2)
+
 Name: cfs-state-reporter
 License: MIT
 Summary: A system service which reports the configuration level of a given node
 Group: System/Management
 Version: %(cat .version)
 Release: %(cat .rpm_release)
-Source: %{name}-%{version}.tar.bz2
-BuildArch: noarch
-Vendor: Cray Inc.
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
-Requires: python3-base
-Requires: python3-requests
-Requires: python3-requests-retry-session >= 0.2.3, python3-requests-retry-session < 0.3.0
+Source: %(echo ${SOURCE_BASENAME})
+BuildArch: %(echo ${RPM_ARCH})
+Vendor: HPE
+# Using or statements in spec files requires RPM and rpm-build >= 4.13
+BuildRequires: rpm-build >= 4.13
+Requires: rpm >= 4.13
+BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
+BuildRequires: python-rpm-generators
+BuildRequires: python-rpm-macros
+BuildRequires: systemd-rpm-macros
+Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
 Requires: systemd
-Requires: cfs-trust
 Requires: cray-auth-utils
 Requires: spire-agent
 
@@ -43,29 +55,40 @@ Requires: spire-agent
 Provides a systemd service and associated library that reports the
 configuration status of a running system during system startup.
 
-%define python3_sitelib %(/usr/bin/python3 -c "from distutils.sysconfig import get_python_lib ; print(get_python_lib())")
-
 %prep
-%setup -q
-
+%setup
 %build
-/usr/bin/python3 setup.py build
 
 %install
-rm -rf $RPM_BUILD_ROOT
-/usr/bin/python3 setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
+# Create our virtualenv
+%python_exec -m venv %{buildroot}%{install_python_dir}
+
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip --no-cache
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check --no-cache
+%{buildroot}%{install_python_dir}/bin/python3 -m pip list --format freeze
+
 mkdir -p ${RPM_BUILD_ROOT}%{_systemdsvcdir}
-cp etc/cfs-state-reporter.service $RPM_BUILD_ROOT%{_systemdsvcdir}/cfs-state-reporter.service
-chmod +x $RPM_BUILD_ROOT%{python3_sitelib}/cfs/status_reporter/__main__.py
+install -m 644 etc/cfs-state-reporter.service $RPM_BUILD_ROOT%{_systemdsvcdir}/cfs-state-reporter.service
+
+# Remove build tools to decrease the virtualenv size.
+%{buildroot}%{install_python_dir}/bin/python3 -m pip uninstall -y pip setuptools
+
+# Remove __pycache__ directories  to decrease the virtualenv size.
+find %{buildroot}%{install_python_dir} -type d -name __pycache__ -exec rm -rvf {} \; -prune
+
+# Fix the virtualenv activation script, ensure VIRTUAL_ENV points to the installed location on the system.
+find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{buildroot}%{install_python_dir}:%{install_python_dir}:g' {}
+
+find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' | tee -a INSTALLED_FILES
+echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
+cat INSTALLED_FILES | xargs -i sh -c 'test -L $RPM_BUILD_ROOT{} -o -f $RPM_BUILD_ROOT{} && echo {} || echo %dir {}' | sort -u > FILES
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
-%files
-%defattr(-,root,root)
-%{python3_sitelib}/*
+%files -f FILES
+%license LICENSE
 %dir %{_systemdsvcdir}
-%{_systemdsvcdir}/cfs-state-reporter.service
 
 %pre
 %if 0%{?suse_version}
