@@ -27,7 +27,7 @@
 GENERIC_RPM_SOURCE_TAR ?= cfs-state-reporter-source.tar
 BUILD_ROOT_RELDIR ?= dist/rpmbuild
 NAME ?= cfs-state-reporter
-PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple -c constraints.txt --no-cache
+PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --no-cache
 PY_VERSION ?= 3.6
 RPM_ARCH ?= x86_64
 RPM_OS ?= sle15-sp6
