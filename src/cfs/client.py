@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,6 +25,7 @@
 This module is responsible for interacting with CFS in a reliable, authorized
 fashion.
 """
+from functools import lru_cache
 import logging
 import os
 import subprocess
@@ -35,6 +36,7 @@ from requests_retry_session import requests_retry_session as base_requests_retry
 from . import PROTOCOL
 
 LOGGER = logging.getLogger('cfs.client')
+
 
 TOKEN_DIR = "/etc/opt/cray/tokens/"
 ACCESS_TOKEN_PATH = os.path.join(TOKEN_DIR, 'access')
@@ -65,8 +67,18 @@ def get_auth_token(path='/opt/cray/auth-utils/bin/get-auth-token'):
         time.sleep(2)
 
 
+@lru_cache()
+def ca_cert_path():
+    """
+    Since cfs-state-reporter runs in a virtual environment, we must get the CA certificate location
+    from the system Python
+    """
+    return subprocess.check_output(['/usr/bin/python3','-c','import certifi, sys; sys.stdout.write(certifi.where())'], universal_newlines=True)
+
+
 def requests_retry_session(**kwargs):
     kwargs["protocol"] = PROTOCOL
+    kwargs['verify'] = ca_cert_path()
     session = base_requests_retry_session(**kwargs)
     session.headers.update({'Authorization': 'Bearer %s' % (get_auth_token())})
     return session
