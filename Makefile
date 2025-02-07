@@ -24,12 +24,17 @@
 # If you wish to perform a local build, you will need to clone or copy the contents of the
 # cms-meta-tools repo to ./cms_meta_tools
 
-BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
+GENERIC_RPM_SOURCE_TAR ?= cfs-state-reporter-source.tar
 BUILD_ROOT_RELDIR ?= dist/rpmbuild
 NAME ?= cfs-state-reporter
-PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple -c constraints.txt
+PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple -c constraints.txt --no-cache
 PY_VERSION ?= 3.6
+RPM_ARCH ?= x86_64
+RPM_OS ?= sle15-sp6
+SLE_VERSION ?= 15.6
+
 RPM_VERSION ?= $(shell head -1 .version)
+RPM_RELEASE ?= $(shell head -1 .rpm_release)
 SPEC_FILE ?= ${NAME}.spec
 
 PYTHON_BIN := python$(PY_VERSION)
@@ -44,8 +49,8 @@ SOURCE_NAME ?= ${RPM_NAME}-${RPM_VERSION}
 SOURCE_BASENAME := ${SOURCE_NAME}.tar.bz2
 SOURCE_PATH := $(BUILD_DIR)/SOURCES/${SOURCE_BASENAME}
 
-all : runbuildprep lint prepare rpm
-rpm: rpm_package_source rpm_build_source rpm_build
+PYLINT_VENV ?= pylint-$(PY_VERSION)
+PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
 
 runbuildprep:
 		./cms_meta_tools/scripts/runBuildPrep.sh
@@ -53,40 +58,33 @@ runbuildprep:
 lint:
 		./cms_meta_tools/scripts/runLint.sh
 
-rpm_pre_clean:
-		rm -rf $(BUILD_ROOT_RELDIR)
+pre_clean:
+		rm -rf dist
 
-prepare:
-		mkdir -p $(BUILD_DIR)/SPECS $(BUILD_DIR)/SOURCES
-		cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
-
-rpm_package_source:
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' \
+python_rpms_prepare:
+		tar \
 			--exclude '.git*' \
+			--exclude './.tmp.*' \
 			--exclude ./cfs.egg-info \
 			--exclude ./build \
-			--exclude ./dist \
-			--exclude $(SOURCE_BASENAME) \
 			--exclude ./cms_meta_tools \
-			-cvjf $(SOURCE_PATH) .
+			--exclude ./dist \
+            --exclude ./$(BUILD_ROOT_RELDIR) \
+			--exclude $(GENERIC_RPM_SOURCE_TAR) \
+			--exclude './pylint-*' \
+			-cvf $(GENERIC_RPM_SOURCE_TAR) .
 
-rpm_build_source:
-		BUILD_METADATA="$(BUILD_METADATA)" \
-		PIP_INSTALL_ARGS="$(PIP_INSTALL_ARGS)" \
-		PYTHON_BIN=$(PYTHON_BIN) \
-		RPM_ARCH=$(RPM_ARCH) \
-		RPM_NAME=$(RPM_NAME) \
-		SOURCE_BASENAME="$(SOURCE_BASENAME)" \
-		rpmbuild -ts $(SOURCE_PATH) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
-
-rpm_build:
-		BUILD_METADATA="$(BUILD_METADATA)" \
-		PIP_INSTALL_ARGS="$(PIP_INSTALL_ARGS)" \
-		PYTHON_BIN=$(PYTHON_BIN) \
-		RPM_ARCH=$(RPM_ARCH) \
-		RPM_NAME=$(RPM_NAME) \
-		SOURCE_BASENAME="$(SOURCE_BASENAME)" \
-		rpmbuild -ba $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
+python_rpm_build:
+		RPM_NAME='$(RPM_NAME)' \
+		RPM_VERSION='$(RPM_VERSION)' \
+		RPM_RELEASE='$(RPM_RELEASE)' \
+		RPM_ARCH='$(RPM_ARCH)' \
+		RPM_OS='$(RPM_OS)' \
+		PY_VERSION='$(PY_VERSION)' \
+		PIP_INSTALL_ARGS='$(PIP_INSTALL_ARGS)' \
+		./cms_meta_tools/resources/build_rpm.sh \
+			--arch '$(RPM_ARCH)' \
+			'$(BUILD_RELDIR)' '$(RPM_NAME)' '$(RPM_VERSION)]' '$(GENERIC_RPM_SOURCE_TAR)' '$(SPEC_FILE)'
 
 pymod_build:
 		$(PY_BIN) --version
@@ -94,3 +92,16 @@ pymod_build:
 		$(PY_BIN) -m pip list --format freeze
 		$(PY_BIN) -m build --wheel
 		cp ./dist/cfs*.whl .
+
+pymod_pylint_setup:
+		$(PY_BIN) --version
+		$(PY_BIN) -m venv $(PYLINT_VENV)
+		$(PYLINT_VENV_PYBIN) -m pip install --upgrade $(PIP_INSTALL_ARGS) pip
+		$(PYLINT_VENV_PYBIN) -m pip install --disable-pip-version-check $(PIP_INSTALL_ARGS) pylint cfs*.whl
+		$(PYLINT_VENV_PYBIN) -m pip list --format freeze
+
+pymod_pylint_errors:
+		$(PYLINT_VENV_PYBIN) -m pylint --errors-only cfs
+
+pymod_pylint_full:
+		$(PYLINT_VENV_PYBIN) -m pylint --fail-under 7 cfs

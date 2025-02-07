@@ -28,12 +28,12 @@
 %define py_version %(echo ${PY_VERSION})
 %define py_minor_version %(echo ${PY_VERSION} | cut -d. -f2)
 
-Name: cfs-state-reporter
+Name: %(echo ${RPM_NAME})
 License: MIT
 Summary: A system service which reports the configuration level of a given node
 Group: System/Management
-Version: %(cat .version)
-Release: %(cat .rpm_release)
+Version: %(echo ${RPM_VERSION})
+Release: %(echo ${RPM_RELEASE})
 Source: %(echo ${SOURCE_BASENAME})
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: HPE
@@ -63,8 +63,8 @@ configuration status of a running system during system startup.
 # Create our virtualenv
 %python_exec -m venv %{buildroot}%{install_python_dir}
 
-%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip --no-cache
-%{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check --no-cache
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade --user %(echo ${PIP_INSTALL_ARGS}) pip setuptools
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check
 %{buildroot}%{install_python_dir}/bin/python3 -m pip list --format freeze
 
 mkdir -p ${RPM_BUILD_ROOT}%{_systemdsvcdir}
