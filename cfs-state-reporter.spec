@@ -63,7 +63,7 @@ configuration status of a running system during system startup.
 # Create our virtualenv
 %python_exec -m venv %{buildroot}%{install_python_dir}
 
-%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade --user %(echo ${PIP_INSTALL_ARGS}) pip setuptools
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip setuptools
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check
 %{buildroot}%{install_python_dir}/bin/python3 -m pip list --format freeze
 
