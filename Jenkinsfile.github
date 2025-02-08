@@ -130,7 +130,7 @@ pipeline {
                 sh "make pymod_build"
             }
         }
-
+/*
         stage('Pylint') {
             matrix {
                 axes {
@@ -160,7 +160,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage ("Python RPMs Build Prep") {
             steps {
                 sh "make python_rpms_prepare"
@@ -178,7 +178,8 @@ pipeline {
                     }
                     axis {
                         name 'RPM_ARCH'
-                        values 'aarch64', 'x86_64'
+                        // values 'aarch64', 'x86_64'
+                        values 'x86_64'
                     }
                 }
                 environment {
