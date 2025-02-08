@@ -79,13 +79,13 @@ install -m 644 etc/cfs-state-reporter.service $RPM_BUILD_ROOT%{_systemdsvcdir}/c
 %{buildroot}%{install_python_dir}/bin/python3 -m pip uninstall -y pip setuptools wheel
 
 # Remove __pycache__ directories  to decrease the virtualenv size.
-find %{buildroot}%{install_python_dir} -type d -name __pycache__ -exec rm -rvf {} \; -prune
+find %{buildroot}%{install_python_dir} -type d -name __pycache__ -exec rm -rf {} \; -prune
 
 # Fix the virtualenv activation script, ensure VIRTUAL_ENV points to the installed location on the system.
 find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{buildroot}%{install_python_dir}:%{install_python_dir}:g' {}
 
-find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' | tee -a INSTALLED_FILES
-echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
+find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' | tee INSTALLED_FILES
+echo %{_systemdsvcdir}/cfs-state-reporter.service | tee INSTALLED_FILES
 cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "$RPM_BUILD_ROOT{}" -o -f "$RPM_BUILD_ROOT{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
 
 %clean
