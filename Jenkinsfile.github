@@ -23,7 +23,7 @@
  *  OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-@Library('cms-meta-tools') _
+@Library('cms-meta-tools@altrpm') _
 @Library('csm-shared-library') __
 
 def pyImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python'
