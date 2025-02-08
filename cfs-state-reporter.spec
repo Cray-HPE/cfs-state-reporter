@@ -65,7 +65,7 @@ configuration status of a running system during system startup.
 %python_exec -m venv %{buildroot}%{install_python_dir}
 
 %{buildroot}%{install_python_dir}/bin/python3 --version
-%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip setuptools
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip setuptools wheel
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check
 %if %{py_minor_version} < 12
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) theano --disable-pip-version-check
@@ -76,7 +76,7 @@ mkdir -p ${RPM_BUILD_ROOT}%{_systemdsvcdir}
 install -m 644 etc/cfs-state-reporter.service $RPM_BUILD_ROOT%{_systemdsvcdir}/cfs-state-reporter.service
 
 # Remove build tools to decrease the virtualenv size.
-%{buildroot}%{install_python_dir}/bin/python3 -m pip uninstall -y pip setuptools
+%{buildroot}%{install_python_dir}/bin/python3 -m pip uninstall -y pip setuptools wheel
 
 # Remove __pycache__ directories  to decrease the virtualenv size.
 find %{buildroot}%{install_python_dir} -type d -name __pycache__ -exec rm -rvf {} \; -prune
@@ -86,7 +86,7 @@ find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{bui
 
 find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' | tee -a INSTALLED_FILES
 echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
-cat INSTALLED_FILES | xargs -i sh -c 'test -L "$RPM_BUILD_ROOT{}" -o -f "$RPM_BUILD_ROOT{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
+cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "$RPM_BUILD_ROOT{}" -o -f "$RPM_BUILD_ROOT{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
 
 %clean
 rm -rf %{buildroot}
