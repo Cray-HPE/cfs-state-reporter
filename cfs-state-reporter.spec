@@ -84,10 +84,12 @@ find %{buildroot}%{install_python_dir} -type d -name __pycache__ -exec rm -rf {}
 
 # Fix the virtualenv activation script, ensure VIRTUAL_ENV points to the installed location on the system.
 find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{buildroot}%{install_python_dir}:%{install_python_dir}:g' {}
+echo %{buildroot}
+echo ${RPM_BUILD_ROOT}
 
 find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' | tee INSTALLED_FILES
 echo %{_systemdsvcdir}/cfs-state-reporter.service | tee INSTALLED_FILES
-cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "$RPM_BUILD_ROOT{}" -o -f "$RPM_BUILD_ROOT{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
+cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
 
 %clean
 rm -rf %{buildroot}
