@@ -67,6 +67,9 @@ configuration status of a running system during system startup.
 %{buildroot}%{install_python_dir}/bin/python3 --version
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip setuptools
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check
+%if %{py_minor_version} < 12
+%{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) theano --disable-pip-version-check
+%endif
 %{buildroot}%{install_python_dir}/bin/python3 -m pip list --format freeze
 
 mkdir -p ${RPM_BUILD_ROOT}%{_systemdsvcdir}
