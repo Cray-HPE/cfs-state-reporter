@@ -87,8 +87,8 @@ find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{bui
 echo %{buildroot}
 echo ${RPM_BUILD_ROOT}
 
-find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' | tee INSTALLED_FILES
-echo %{_systemdsvcdir}/cfs-state-reporter.service | tee INSTALLED_FILES
+find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' >> INSTALLED_FILES
+echo %{_systemdsvcdir}/cfs-state-reporter.service >> INSTALLED_FILES
 cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
 
 %clean
