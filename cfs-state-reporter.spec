@@ -89,7 +89,7 @@ echo ${RPM_BUILD_ROOT}
 
 find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' >> INSTALLED_FILES
 echo %{_systemdsvcdir}/cfs-state-reporter.service >> INSTALLED_FILES
-cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
+cat INSTALLED_FILES | xargs -0 -L 50 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
 
 %clean
 rm -rf %{buildroot}
