@@ -28,35 +28,30 @@
 
 def pyImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python'
 
-def buildRootReldir() {
-    return "dist/rpmbuild"
-}
-
 def getSleVersion() {
     return sh(returnStdout: true, script: 'awk -F= \'/VERSION_ID/{gsub(/["]/,""); print \$NF}\' /etc/os-release').trim()
 }
 
-def buildRelDir(rpmName, rpmOs, rpmArch) {
-    def build_root_reldir = buildRootReldir()
-    return "${build_root_reldir}/${rpmArch}/${rpmOs}/${rpmName}"
+def outputSubDir(rpmOs, rpmArch) {
+    return "${rpmArch}/${rpmOs}"
 }
 
-def publishRpms(rpmName, rpmOs, rpmArch, buildReldir) {
-    sh "ls -R ${buildReldir}"
+def publishRpms(rpmName, rpmOs, rpmArch, outputReldir) {
+    sh "ls -R ${outputReldir}"
     echo "${rpmName} ${rpmOs} ${rpmArch}"
     publishCsmRpms(
         arch: "${rpmArch}",
         component: "${rpmName}",
         isStable: env.IS_STABLE,
         os: "${rpmOs}",
-        pattern: "${buildReldir}/RPMS/${rpmArch}/*.rpm",
+        pattern: "${outputReldir}/RPMS/${rpmArch}/*.rpm",
     )
     publishCsmRpms(
         arch: "src",
         component: "${rpmName}",
         isStable: env.IS_STABLE,
         os: "${rpmOs}",
-        pattern: "${buildReldir}/SRPMS/*.rpm",
+        pattern: "${outputReldir}/SRPMS/*.rpm",
     )
 }
 
@@ -79,7 +74,7 @@ pipeline {
         BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
         PYMOD_BUILD_PY_VERSION = "3.12"
         PRIMARY_NODE = "${env.NODE_NAME}"
-        BUILD_ROOT_RELDIR = buildRootReldir()
+        RPM_OUTPUT_RELDIR = "dist/rpmbuild"
         RPM_NAME = "${env.NAME}"
         SPEC_FILE = "${env.RPM_NAME}.spec"
         PIP_INSTALL_ARGS = "--trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --extra-index-url https://pypi.org/simple --no-cache -c constraints.txt"
@@ -130,7 +125,6 @@ pipeline {
                 sh "make pymod_build"
             }
         }
-/*
         stage('Pylint') {
             matrix {
                 axes {
@@ -160,7 +154,6 @@ pipeline {
                 }
             }
         }
-*/
         stage ("Python RPMs Build Prep") {
             steps {
                 sh "make python_rpms_prepare"
@@ -174,13 +167,11 @@ pipeline {
                         name 'DOCKER_TAG'
                         // $pyImage:$PY_VERSION implies the SLES version used for the build
                         // $pyImage:$PY_VERSION-SLES15.5 dictates the python version and SLES version
-                        //values '3.6', '3.9', '3.10', '3.11-SLES15.5', '3.12'
-                        values '3.6', '3.12'
+                        values '3.6', '3.9', '3.10', '3.11-SLES15.5', '3.12'
                     }
                     axis {
                         name 'RPM_ARCH'
-                        // values 'aarch64', 'x86_64'
-                        values 'x86_64'
+                        values 'aarch64', 'x86_64'
                     }
                 }
                 environment {
@@ -189,8 +180,6 @@ pipeline {
                     PYTHON_BIN = 'python3.6'
                     SOURCE_DOCKER_IMAGE = "${pyImage}:${DOCKER_TAG}"
                     DOCKER_BUILD_IMAGE = "${SOURCE_DOCKER_IMAGE}-${DOCKER_ARCH}"
-                    RPM_VERSION = sh(script: "head -1 .version", returnStdout: true).trim()
-                    RPM_RELEASE = sh(script: "head -1 .rpm_release", returnStdout: true).trim()
                 }
                 stages {
                     stage('Pull & tag') {
@@ -212,16 +201,14 @@ pipeline {
                         environment {
                             SLE_VERSION = getSleVersion()
                             RPM_OS = getSleRpmOs(env.SLE_VERSION)
-                            BUILD_RELDIR = buildRelDir(env.RPM_NAME, env.RPM_OS, env.RPM_ARCH)
+                            OUTPUT_SUBDIR = outputSubDir(env.RPM_OS, env.RPM_ARCH)
                         }
                         steps {
                             script {
                                 buildCsmRpms(
-                                    name: env.RPM_NAME,
-                                    version: RPM_VERSION,
                                     sourceTarPath: env.GENERIC_RPM_SOURCE_TAR,
                                     specFileBasename: env.SPEC_FILE,
-                                    buildReldir: env.BUILD_RELDIR,
+                                    outputReldir: "${env.RPM_OUTPUT_RELDIR}/${env.OUTPUT_SUBDIR}",
                                     arch: env.RPM_ARCH,
                                 )
                             }
@@ -238,10 +225,10 @@ pipeline {
                         environment {
                             SLE_VERSION = getSleVersion()
                             RPM_OS = getSleRpmOs(env.SLE_VERSION)
-                            BUILD_RELDIR = buildRelDir(env.RPM_NAME, env.RPM_OS, env.RPM_ARCH)
+                            OUTPUT_SUBDIR = outputSubDir(env.RPM_OS, env.RPM_ARCH)
                         }
                         steps {
-                            publishRpms(env.RPM_NAME, env.RPM_OS, env.RPM_ARCH, env.BUILD_RELDIR)
+                            publishRpms(env.RPM_NAME, env.RPM_OS, env.RPM_ARCH, "${env.RPM_OUTPUT_RELDIR}/${env.OUTPUT_SUBDIR}")
                         }
                     }
                 }

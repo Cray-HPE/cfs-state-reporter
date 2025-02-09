@@ -24,30 +24,17 @@
 # If you wish to perform a local build, you will need to clone or copy the contents of the
 # cms-meta-tools repo to ./cms_meta_tools
 
-GENERIC_RPM_SOURCE_TAR ?= cfs-state-reporter-source.tar
-BUILD_ROOT_RELDIR ?= dist/rpmbuild
 NAME ?= cfs-state-reporter
+GENERIC_RPM_SOURCE_TAR ?= cfs-state-reporter-source.tar
+RPM_OUTPUT_RELDIR ?= dist/rpmbuild
 PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --extra-index-url https://pypi.org/simple --no-cache -c constraints.txt
 PY_VERSION ?= 3.6
 RPM_ARCH ?= x86_64
-RPM_OS ?= sle15-sp6
-SLE_VERSION ?= 15.6
 
-RPM_VERSION ?= $(shell head -1 .version)
-RPM_RELEASE ?= $(shell head -1 .rpm_release)
 SPEC_FILE ?= ${NAME}.spec
 
 PYTHON_BIN := python$(PY_VERSION)
 PY_BIN ?= /usr/bin/$(PYTHON_BIN)
-RPM_NAME ?= $(NAME)
-
-BUILD_BASE_RELDIR ?= $(BUILD_ROOT_RELDIR)/$(RPM_ARCH)
-BUILD_RELDIR ?= $(BUILD_BASE_RELDIR)/$(RPM_NAME)
-BUILD_DIR ?= $(PWD)/$(BUILD_RELDIR)
-
-SOURCE_NAME ?= ${RPM_NAME}-${RPM_VERSION}
-SOURCE_BASENAME := ${SOURCE_NAME}.tar.bz2
-SOURCE_PATH := $(BUILD_DIR)/SOURCES/${SOURCE_BASENAME}
 
 PYLINT_VENV ?= pylint-$(PY_VERSION)
 PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
@@ -65,26 +52,20 @@ python_rpms_prepare:
 		tar \
 			--exclude '.git*' \
 			--exclude './.tmp.*' \
-			--exclude ./cfs.egg-info \
 			--exclude ./build \
 			--exclude ./cms_meta_tools \
 			--exclude ./dist \
-            --exclude ./$(BUILD_ROOT_RELDIR) \
-			--exclude $(GENERIC_RPM_SOURCE_TAR) \
+            --exclude '$(RPM_OUTPUT_RELDIR)' \
+			--exclude '$(GENERIC_RPM_SOURCE_TAR)' \
 			--exclude './pylint-*' \
-			-cvf $(GENERIC_RPM_SOURCE_TAR) .
+			-cvf '$(GENERIC_RPM_SOURCE_TAR)' .
 
 python_rpm_build:
-		RPM_NAME='$(RPM_NAME)' \
-		RPM_VERSION='$(RPM_VERSION)' \
-		RPM_RELEASE='$(RPM_RELEASE)' \
-		RPM_ARCH='$(RPM_ARCH)' \
-		RPM_OS='$(RPM_OS)' \
 		PY_VERSION='$(PY_VERSION)' \
 		PIP_INSTALL_ARGS='$(PIP_INSTALL_ARGS)' \
-		./cms_meta_tools/resources/build_rpm.sh \
+		./cms_meta_tools/resources/build_rpm_v2.sh \
 			--arch '$(RPM_ARCH)' \
-			'$(BUILD_RELDIR)' '$(RPM_NAME)' '$(RPM_VERSION)]' '$(GENERIC_RPM_SOURCE_TAR)' '$(SPEC_FILE)'
+			'$(RPM_OUTPUT_RELDIR)' '$(GENERIC_RPM_SOURCE_TAR)' '$(SPEC_FILE)'
 
 pymod_build:
 		$(PY_BIN) --version

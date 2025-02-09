@@ -28,12 +28,12 @@
 %define py_version %(echo ${PY_VERSION})
 %define py_minor_version %(echo ${PY_VERSION} | cut -d. -f2)
 
-Name: %(echo ${RPM_NAME})
+Name: cfs-state-reporter
 License: MIT
 Summary: A system service which reports the configuration level of a given node
 Group: System/Management
-Version: %(echo ${RPM_VERSION})
-Release: %(echo ${RPM_RELEASE})
+Version: %(cat .version)
+Release: %(cat .rpm_release)
 Source: %(echo ${SOURCE_BASENAME})
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: HPE
@@ -66,30 +66,21 @@ configuration status of a running system during system startup.
 
 %{buildroot}%{install_python_dir}/bin/python3 --version
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install --upgrade %(echo ${PIP_INSTALL_ARGS}) pip setuptools wheel
-%if %{py_minor_version} < 12
-%{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) theano cfs*.whl --disable-pip-version-check
-%else
 %{buildroot}%{install_python_dir}/bin/python3 -m pip install %(echo ${PIP_INSTALL_ARGS}) cfs*.whl --disable-pip-version-check
-%endif
 %{buildroot}%{install_python_dir}/bin/python3 -m pip list --format freeze
 
-mkdir -p ${RPM_BUILD_ROOT}%{_systemdsvcdir}
-install -m 644 etc/cfs-state-reporter.service $RPM_BUILD_ROOT%{_systemdsvcdir}/cfs-state-reporter.service
+mkdir -p %{buildroot}%{_systemdsvcdir}
+install -m 644 etc/cfs-state-reporter.service %{buildroot}%{_systemdsvcdir}/cfs-state-reporter.service
 
 # Remove build tools to decrease the virtualenv size.
 %{buildroot}%{install_python_dir}/bin/python3 -m pip uninstall -y pip setuptools wheel
 
-# Remove __pycache__ directories  to decrease the virtualenv size.
-find %{buildroot}%{install_python_dir} -type d -name __pycache__ -exec rm -rf {} \; -prune
-
 # Fix the virtualenv activation script, ensure VIRTUAL_ENV points to the installed location on the system.
 find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{buildroot}%{install_python_dir}:%{install_python_dir}:g' {}
-echo %{buildroot}
-echo ${RPM_BUILD_ROOT}
 
-find %{buildroot}%{install_dir} | sed 's:'${RPM_BUILD_ROOT}'::' >> INSTALLED_FILES
-echo %{_systemdsvcdir}/cfs-state-reporter.service >> INSTALLED_FILES
-cat INSTALLED_FILES | xargs -0 -L 50 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u > FILES
+find %{buildroot}%{install_dir} | sed 's:%{buildroot}::' | tee -a INSTALLED_FILES
+echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
+cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u | tee FILES
 
 %clean
 rm -rf %{buildroot}
