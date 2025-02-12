@@ -30,6 +30,8 @@ RPM_OUTPUT_RELDIR ?= dist/rpmbuild
 PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --extra-index-url https://pypi.org/simple --no-cache -c constraints.txt
 PY_VERSION ?= 3.6
 RPM_ARCH ?= x86_64
+RPM_VERSION ?= $(shell head -1 .version)
+RPM_RELEASE ?= $(shell head -1 .rpm_release)
 
 SPEC_FILE ?= ${NAME}.spec
 
@@ -61,6 +63,8 @@ python_rpms_prepare:
 			-cvf '$(GENERIC_RPM_SOURCE_TAR)' .
 
 python_rpm_build:
+		RPM_VERSION='$(RPM_VERSION)' \
+		RPM_RELEASE='$(RPM_RELEASE)' \
 		PY_VERSION='$(PY_VERSION)' \
 		PIP_INSTALL_ARGS='$(PIP_INSTALL_ARGS)' \
 		./cms_meta_tools/resources/build_rpm_v2.sh \

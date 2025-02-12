@@ -32,8 +32,8 @@ Name: cfs-state-reporter
 License: MIT
 Summary: A system service which reports the configuration level of a given node
 Group: System/Management
-Version: %(cat .version)
-Release: %(cat .rpm_release)
+Version: %(echo ${RPM_VERSION})
+Release: %(echo ${RPM_RELEASE})
 Source: %(echo ${SOURCE_BASENAME})
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: HPE
