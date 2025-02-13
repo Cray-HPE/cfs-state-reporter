@@ -80,7 +80,7 @@ find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{bui
 
 find %{buildroot}%{install_dir} | sed 's:%{buildroot}::' | tee -a INSTALLED_FILES
 echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
-cat INSTALLED_FILES | xargs -0 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u | tee FILES
+cat INSTALLED_FILES | xargs -0 -n 10 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u | tee FILES
 
 %clean
 rm -rf %{buildroot}
