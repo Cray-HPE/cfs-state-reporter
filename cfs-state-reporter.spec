@@ -78,7 +78,7 @@ install -m 644 etc/cfs-state-reporter.service %{buildroot}%{_systemdsvcdir}/cfs-
 # Fix the virtualenv activation script, ensure VIRTUAL_ENV points to the installed location on the system.
 find %{buildroot}%{install_python_dir}/bin -type f -print0 | xargs -0 -t -i sed -i 's:%{buildroot}%{install_python_dir}:%{install_python_dir}:g' {}
 
-find %{buildroot}%{install_dir} %{buildroot}%{_systemdsvcdir}/cfs-state-reporter.service \( -type l -o -type f \) -print -o -printf '%%dir %p\n' | sort -u | tee INSTALLED_FILES
+find %{buildroot}%{install_dir} %{buildroot}%{_systemdsvcdir}/cfs-state-reporter.service \( -type l -o -type f \) -print -o -exec echo '%dir {}' \; | sort -u | tee INSTALLED_FILES
 
 # Strip the buildroot from the paths in the file, and write the result to FILES
 sed 's:^\(%dir \|\)%{buildroot}:\1:' INSTALLED_FILES | tee FILES
