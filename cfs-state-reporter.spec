@@ -80,7 +80,9 @@ find %{buildroot}%{install_python_dir}/bin -type f | xargs -t -i sed -i 's:%{bui
 
 find %{buildroot}%{install_dir} | sed 's:%{buildroot}::' | tee -a INSTALLED_FILES
 echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
-cat INSTALLED_FILES | xargs -0 -n 10 -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u | tee FILES
+# Our xargs command will be sad if any of the paths have spaces in them, so let's make sure that isn't the case
+grep -E '[[:space:]].*$' INSTALLED_FILES && echo "ERROR: spec file must be updated to handle paths with whitespace" && exit 1
+cat INSTALLED_FILES | xargs -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u | tee FILES
 
 %clean
 rm -rf %{buildroot}
