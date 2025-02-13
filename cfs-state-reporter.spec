@@ -78,16 +78,12 @@ install -m 644 etc/cfs-state-reporter.service %{buildroot}%{_systemdsvcdir}/cfs-
 # Fix the virtualenv activation script, ensure VIRTUAL_ENV points to the installed location on the system.
 find %{buildroot}%{install_python_dir}/bin -type f -print0 | xargs -0 -t -i sed -i 's:%{buildroot}%{install_python_dir}:%{install_python_dir}:g' {}
 
+# Identify all of the files installed by the RPM. For directories, prefix them with "%dir"
+# Sort, discard duplicates (shouldn't be any, but no harm), and write to INSTALLED_FILES
 find %{buildroot}%{install_dir} %{buildroot}%{_systemdsvcdir}/cfs-state-reporter.service \( -type l -o -type f \) -print -o -exec echo '%dir {}' \; | sort -u | tee INSTALLED_FILES
 
 # Strip the buildroot from the paths in the file, and write the result to FILES
 sed 's:^\(%dir \|\)%{buildroot}:\1:' INSTALLED_FILES | tee FILES
-
-#find %{buildroot}%{install_dir} | sed 's:%{buildroot}::' | tee -a INSTALLED_FILES
-#echo %{_systemdsvcdir}/cfs-state-reporter.service | tee -a INSTALLED_FILES
-# Our xargs command will be sad if any of the paths have spaces in them, so let's make sure that isn't the case
-#grep -E '[[:space:]].*$' INSTALLED_FILES && echo "ERROR: spec file must be updated to handle paths with whitespace" && exit 1
-#cat INSTALLED_FILES | xargs -i sh -c 'test -L "%{buildroot}{}" -o -f "%{buildroot}{}" && echo "{}" || echo "%dir {}"' | sort -u | tee FILES
 
 %clean
 rm -rf %{buildroot}
