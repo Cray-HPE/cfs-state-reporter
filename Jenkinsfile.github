@@ -208,6 +208,8 @@ pipeline {
                         steps {
                             script {
                                 buildCsmRpms(
+                                    name: env.RPM_NAME,
+                                    version: env.RPM_VERSION,
                                     sourceTarPath: env.GENERIC_RPM_SOURCE_TAR,
                                     specFileBasename: env.SPEC_FILE,
                                     outputReldir: "${env.RPM_OUTPUT_RELDIR}/${env.OUTPUT_SUBDIR}",
