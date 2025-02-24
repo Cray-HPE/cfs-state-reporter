@@ -31,7 +31,7 @@ Vendor: Cray Inc.
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 Requires: python3-base
 Requires: python3-requests
-Requires: python3-requests-retry-session >= 0.2.3, python3-requests-retry-session < 0.3.0
+Requires: python3-requests-retry-session >= 0.2.4, python3-requests-retry-session < 0.3.0
 Requires: systemd
 Requires: cfs-trust
 Requires: cray-auth-utils

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.3] - 2025-02-24
+### Dependencies
+- Require at least 0.2.4 of `requests_retry_session`, to ensure it has an important fix.
+
 ## [1.12.2] - 2025-01-10
 ### Fixed
 - Alter version requirements for `requests_retry_session` RPM version to avoid install error
