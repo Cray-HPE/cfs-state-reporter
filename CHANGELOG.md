@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.4] - 2025-07-02
+### Dependencies
+- CASMCMS-9468: Use newer version of `requests_retry_session`
+
 ## [1.12.3] - 2025-02-24
 ### Dependencies
 - Require at least 0.2.4 of `requests_retry_session`, to ensure it has an important fix.
